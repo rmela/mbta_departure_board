@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<!--
+ 
+ Helpful URLs
+
+https://api-v3.mbta.com/services/?filter[route]=CR-Fitchburg
+https://api-v3.mbta.com/schedules?filter[route]=CR-Fitchburg&page[limit]=20&filter[stop_sequence]=last
+https://api-v3.mbta.com/predictions/?filter[stop]=North%20Station
+
+Route description:
+
+https://api-v3.mbta.com/routes/CR-Haverhill
+
+--->
+<html>
+  <head>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/vue.js"></script>
+  </head>
+  <body>
+       <div id="app">
+         <label for="#station">Station</label>
+         <select v-model="station" type="select" id="station" @change="stationSelected()" >
+           <option value=""></option>
+           <option value="North Station">North Station</option>
+           <option value="South Station">South Station</option>
+         </select>
+         <div>Selected {{station}}</div> 
+         <div>URL {{url}}</div>
+         <div v-for="prediction in predictions.data">
+           <div style='border 1px solid black' class='preformatted'>{{prediction}}</div>
+         </div>
+       </div>
+       <script src="js/app.js"></script>
+  </body>
+</html>
+
