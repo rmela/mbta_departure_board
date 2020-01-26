@@ -5,58 +5,23 @@
     <link rel="stylesheet" href="css/styles.css">
     <script src="js/moment.js"></script>
     <script src="js/vue.js"></script>
-    <script src="js/datalayer.js"></script>
   </head>
   <body>
 
    <div id="app">
 
-     <table> 
-       <caption>North Station Departures</caption>
-       <thead>
-          <th>route</th>
-          <th>departure</th>
-          <th>status</th>
-          <th>train</th>
-          <th>track</th>
-          <th class="debug">id</th>
-       </thead>
-       <tbody v-for="prediction in predictions">
-         <tr v-if="prediction.station == 'North Station'"> 
-           <td>{{prediction.route}}</td>
-           <td>{{prediction.departure | tformat }}</td>
-           <td>{{prediction.status}}</td>
-           <td>{{prediction.train}}</td>
-           <td>{{prediction.id | track }}</td>
-           <td class="debug"><div class='preformatted'>{{prediction}}</div></td>
-         </tr>
-       </tbody>
-     </table>
+     <departure-table station="North Station" v-bind:predictions="predictions">
+     </departure-table>
 
-     <table> 
-       <caption>South Station Departures</caption>
-       <thead>
-          <th>route</th>
-          <th>departure</th>
-          <th>status</th>
-          <th>train</th>
-          <th>track</th>
-          <th class="debug">id</th>
-       </thead>
-       <tbody v-for="prediction in predictions">
-         <tr v-if="prediction.station == 'South Station'"> 
-           <td>{{prediction.route}}</td>
-           <td>{{prediction.departure | tformat }}</td>
-           <td>{{prediction.status}}</td>
-           <td>{{prediction.train}}</td>
-           <td>{{prediction.id | track }}</td>
-           <td class="debug"><div class='preformatted'>{{prediction}}</div></td>
-         </tr>
-       </tbody>
-     </table>
+     <departure-table station="South Station" v-bind:predictions="predictions">
+     </departure-table>
+
      <div class="debug preformatted">{{predictions}}</div>
 
-   </div> <!-- app -->
+   </div>
+
+   <!-- application scripts -->
+   <script src="js/datalayer.js"></script>
    <script src="js/app.js"></script>
 
 
