@@ -14,7 +14,9 @@ const DataLayer = function() {
     query = query.split('&').map( elt => elt.split('=') )
     query = Object.fromEntries( query )
     API_KEY = query.apiKey
-    if( !API_KEY ) alert("Add API_KEY to app.js or pass apiKey query parameter to enable real-time updates")
+    if( !API_KEY ) {
+       console.error('Missing API key - live stream updates will not work')
+    }
   }
 
   let predictionsUrl = `${BASE}/predictions/?filter[stop]=South Station,North Station&sort=time`
@@ -34,6 +36,7 @@ const DataLayer = function() {
 
     return  {
       departure: prediction.attributes.departure_time,
+      arrival: prediction.attributes.arrival_time, // maybe this is populated and used to tell whether train is at platform?
       id: prediction.id,
       route: prediction.relationships.route.data.id,
       station: prediction.relationships.stop.data.id,
@@ -72,11 +75,12 @@ const DataLayer = function() {
     if(!API_KEY) return
  
     this.eventStream = new EventSource( streamUrl )
-    this.eventStream.onerror = function(err) { console.log( err ) } 
     this.eventStream.onmessage = function(msg) { console.log('message', msg ) }
     this.eventStream.onclose = function(msg) { console.log('close', msg ) }
     this.eventStream.onopen = function(msg) { console.log('open', msg ) }
-    this.eventStream.addEventListener('error', err => console.log( err ) )
+    this.eventStream.addEventListener('error', function(err) {
+       console.error( err )
+    })
     this.eventStream.addEventListener('update', this.onUpdate )
 
   }
@@ -88,6 +92,7 @@ const DataLayer = function() {
   function prune() {
     let pruned = DATA.predictions.filter( p => p.departure > moment().format() )
     if( pruned.length == DATA.predictions.length ) return
+console.log( `pruned ${DATA.predictions.length - pruned.length} items` )
     DATA.predictions = pruned
   }
 
@@ -123,7 +128,6 @@ console.log('Updating existing prediction BEFORE', prediction )
        if( data.status )  prediction.status = data.status
 console.log('Updating existing prediction AFTER', prediction )
     }
-    prune() // prune after updates
   }
 
   async function init() {
@@ -133,7 +137,8 @@ console.log('Updating existing prediction AFTER', prediction )
 
   return {
     DATA: DATA,
-    init: init
+    init: init,
+    prune: prune
   }
 
 }()

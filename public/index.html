@@ -8,10 +8,37 @@
   </head>
   <body>
 
+   <p>MBTA departure board challenge.</p>
+
+   <p>
+     Live prediction updates only work if you pass a valid apiKey in the query string.
+     If live stream updates aren't working be sure your API key is correct and look for an error in console log.
+   </p>
+
+   <p class="preformatted">
+     https://rmela.github.io/mbta_departure_board/public?apiKey=your_api_key_here
+   </p>
+
+   <p>Challenge requirements:</p>
+   <ul>
+     <li>Show the upcoming departures at North and South stations</li>
+     <li>Show departure track id</li>
+     <li>Show train destination.  <i>Hack: extracted destination from route ID, not entirely correct</i></li> 
+     <li>Show departure time</li>
+     <li>Show boarding status</li>
+   </ul>
+
+   <hr/>
+
+   <!-- application code -->
+
    <div id="app">
+
 
      <departure-table station="North Station" v-bind:predictions="predictions">
      </departure-table>
+
+     <br/>
 
      <departure-table station="South Station" v-bind:predictions="predictions">
      </departure-table>
@@ -24,16 +51,12 @@
    <script src="js/datalayer.js"></script>
    <script src="js/app.js"></script>
 
+   <hr/>
 
-
-   <ul>
-     <li>should show the upcoming departures at North and South stations</li>
-     <li>Hack: the train destinations ( extracts destination from route ID, not entirely correct )</li>
-     <li>departure times</li>
-     <li>the track numbers</li>
-     <li>Not yet completed: boarding status (e.g. 'Boarding', 'All Aboard', 'Delayed')</li>
-
-   </ul>
+   <p>Not sure about the business logic for boarding status, so I took a stab.  Fetching records with correct
+      destinations ( as opposed to extracting from route name ) seemed onerous, so I left it at the quick hack.
+      HTML and styling stinks, but I'm a back-end developer.
+   </p>
 
   </body>
 </html>
