@@ -11,8 +11,8 @@
    <p>MBTA departure board challenge.</p>
 
    <p>
-     Live prediction updates only work if you pass a valid apiKey in the query string.
-     If live stream updates aren't working be sure your API key is correct and look for an error in console log.
+     You'll need a valid apiKey for streaming predictions to work.   Can be a query string parameter, or hard-coded
+     in datalayer.js.  Errors logged to console.
    </p>
 
    <p class="preformatted">
@@ -21,7 +21,7 @@
 
    <p>Challenge requirements:</p>
    <ul>
-     <li>Show the upcoming departures at North and South stations</li>
+     <li>Show upcoming departures at North and South stations</li>
      <li>Show departure track id</li>
      <li>Show train destination.  <i>Hack: extracted destination from route ID, not entirely correct</i></li> 
      <li>Show departure time</li>
@@ -43,7 +43,7 @@
      <departure-table station="South Station" v-bind:predictions="predictions">
      </departure-table>
 
-     <div class="debug preformatted">{{predictions}}</div>
+     <!-- edit styles.css to display raw data for debugging -->
 
    </div>
 
@@ -53,9 +53,12 @@
 
    <hr/>
 
-   <p>Not sure about the business logic for boarding status, so I took a stab.  Fetching records with correct
-      destinations ( as opposed to extracting from route name ) seemed onerous, so I left it at the quick hack.
-      HTML and styling stinks, but I'm a back-end developer.
+   <p>
+      Not sure about boarding status.  I assumed that if there's a prediction with a track number, then the train
+      is sitting at the platform and ready to board.
+   </p>
+   <p>
+      Boarding status business logic is tenuous at best.
    </p>
 
   </body>
