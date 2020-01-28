@@ -31,6 +31,26 @@ const DataLayer = function() {
   let predictionsUrl = `${BASE}/predictions/?filter[stop]=South Station,North Station&sort=time`
   let streamUrl      = `${BASE}/predictions/?filter[stop]=South Station,North Station&filter[direction_id]=0&api_key=${API_KEY}`
 
+  async function setDestinations( predictions ) {
+    if( predictions.length == 0 ) return
+    let trips = predictions.map( p => p.trip )
+    trips = trips.join(',')
+    trips = await fetch( `${BASE}/trips?filter[id]=${trips}` )
+    trips = await trips.json()
+
+    trips = Object.fromEntries( trips.data.map( t => [t.id, t] ) )
+    
+    for( let prediction of predictions ) {
+      console.log( prediction.trip )
+      let trip = trips[prediction.trip]
+      if( !trip )
+         continue
+      prediction.destination = trip.attributes.headsign
+    }
+    
+    
+    
+  }
   /**
   * @flatten
   *
@@ -50,17 +70,51 @@ const DataLayer = function() {
       train = train.split('_')[1]
     }
 
+    /* convert departure time from string to moment */
+
+    let departure = prediction.attributes.departure_time
+    if( departure ) {
+      departure = moment(departure)
+    }
+
     return  {
-      departure: prediction.attributes.departure_time,
+      departure: departure,
       arrival: prediction.attributes.arrival_time, // maybe this is populated and used to tell whether train is at platform?
       id: prediction.id,
+      trip: prediction.relationships.trip.data.id,
       route: prediction.relationships.route.data.id,
       station: prediction.relationships.stop.data.id,
       status: prediction.attributes.status,
       train: train,
+      boardingStatus: null,
       trip: prediction.relationships.trip.data.id
     }
   } // flatten
+
+  function updateBoardingStatuses() {
+
+    let now = moment()
+
+    for( let prediction of DATA.predictions ) {
+
+       if(!prediction.departure ) continue
+
+       if( moment(now).add( -1, 'minutes' ) > prediction.departure ) {
+         prediction.boardingStatus = 'DEPARTED'
+         return
+       }
+
+       if( moment(now).add( 1, 'minutes' ) > prediction.departure ) {
+         prediction.boardingStatus = 'All Aboard'
+         return
+       }
+
+       if( moment(now).add( 10, 'minutes' ) > prediction.departure ) {
+         prediction.boardingStatus = 'Boarding'
+       }
+       
+    }
+  }
 
   /**
    * @fetchPredictions
@@ -72,10 +126,17 @@ const DataLayer = function() {
    */
 
   async function fetchPredictions() {
+
     let response = await fetch( predictionsUrl )
     let result = await response.json()
-    DATA.predictions = result.data
+
+    result = result.data
       .map( flatten )
+      .filter( elt => elt.departure )
+
+    await setDestinations( result )
+
+    DATA.predictions = result
       //
       // Many predictions in initial list have null departures.
       // Seems like they're departures several hours in the future.
@@ -99,7 +160,7 @@ const DataLayer = function() {
   *
   */
 
-  function onUpdate( msg ) {
+  async function onUpdate( msg ) {
 
     console.log( 'UPDATE', moment().format() )
     console.dir( msg.data )
@@ -111,6 +172,7 @@ const DataLayer = function() {
     if( !prediction ) {
 
        console.log('Adding new prediction', data )
+       await setDestinations( [prediction] )
        DATA.predictions.push( data )
        DATA.predictions = DATA.predictions.sort( timeSortComparator )
 
@@ -181,6 +243,7 @@ const DataLayer = function() {
     DATA.predictions = pruned
   }
 
+
   /*
    * @timeSortComparator 
    *
@@ -213,7 +276,8 @@ const DataLayer = function() {
   return {
     DATA: DATA,
     init: init,
-    prune: prune
+    prune: prune,
+    updateBoardingStatuses: updateBoardingStatuses
   }
 
 }()

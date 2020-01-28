@@ -2,25 +2,6 @@ Vue.component( 'departure-table', {
   props    : ['station', 'predictions'],
   filters  : {
 
-     boardingStatus: function(prediction){
-
-       if( prediction.status.toLowerCase() != 'on time' )
-          return prediction.status
-
-       let now = moment()
-
-       if( moment(now).add(-1, 'minutes' ) > prediction.departure ) {
-         return 'Departed'
-       }
-
-       if( moment(now).add(5, 'minutes' ) > prediction.departure ) {
-         return 'All Aboard'
-       }
-
-       return 'Boarding' // Assuming that if prediction has departure time, train is at platform and boarding
-
-     },
-
     tformat: function(s) {
       if(!s) return s
       let t = moment(s)
@@ -41,7 +22,7 @@ Vue.component( 'departure-table', {
       <table> 
         <caption>{{station}} Departures</caption>
         <thead>
-           <th>route</th>
+           <th>destination</th>
            <th>departure</th>
            <th>status</th>
            <th>boarding status</th>
@@ -51,10 +32,10 @@ Vue.component( 'departure-table', {
         </thead>
         <tbody v-for="prediction in predictions">
           <tr v-if="prediction.station == station">
-            <td>{{prediction.route}}</td>
+            <td>{{prediction.destination}}</td>
             <td>{{prediction.departure | tformat }}</td>
             <td>{{prediction.status}}</td>
-            <td>{{prediction | boardingStatus}}</td>
+            <td>{{prediction.boardingStatus}}</td>
             <td>{{prediction.train}}</td>
             <td>{{prediction.id | track }}</td>
             <td class="debug"><div class='preformatted'>{{prediction}}</div></td>
@@ -66,6 +47,11 @@ Vue.component( 'departure-table', {
   `
 })
 
+function updates() {
+  DataLayer.prune()
+  DataLayer.updateBoardingStatuses()
+}
+
 let app = function() {
   
   return new Vue({
@@ -74,7 +60,7 @@ let app = function() {
     stream: null,
     mounted: function() {
       setTimeout( () => DataLayer.init(), 0 )
-      this.interval = setInterval( DataLayer.prune, 60 )
+      this.interval = setInterval( updates, 10 )
     },
     beforeDestroy: function() {
       if( !this.interval ) return
