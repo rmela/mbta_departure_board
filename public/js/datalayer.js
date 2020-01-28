@@ -87,6 +87,43 @@ const DataLayer = function() {
       .filter( elt => elt.departure )
   }
 
+
+  /**
+  * @onUpdate
+  *
+  * Invoked when new predictions arrive on live stream.
+  *
+  * If matching prediction found in list, update it's values
+  *
+  * If no match found, then prediction is new.  Add it to the list.
+  *
+  */
+
+  function onUpdate( msg ) {
+
+    console.log( 'UPDATE', moment().format() )
+    console.dir( msg.data )
+
+    let data = flatten( JSON.parse( msg.data ) )
+
+    let prediction = DATA.predictions.find( p => p.id == data.id )
+
+    if( !prediction ) {
+
+       console.log('Adding new prediction', data )
+       DATA.predictions.push( data )
+       DATA.predictions = DATA.predictions.sort( timeSortComparator )
+
+    } else {
+
+       console.log('Updating existing prediction BEFORE', prediction )
+       if( data.departure ) prediction.departure = data.departure
+       if( data.train ) prediction.train = data.train
+       if( data.status )  prediction.status = data.status
+       console.log('Updating existing prediction AFTER', prediction )
+
+    }
+  }
   /**
    * @startEventStream
    *
@@ -102,11 +139,15 @@ const DataLayer = function() {
 
     this.eventStream.onclose = function(msg) { console.log('close', msg ) }
     this.eventStream.onopen = function(msg) { console.log('open', msg ) }
+
     this.eventStream.addEventListener('error', function(err) {
-       console.error( err )
+      console.error( err )
     })
 
-    this.eventStream.addEventListener('update', this.onUpdate )
+    this.eventStream.addEventListener('update', function(msg) {
+      console.log( 'update event' ) 
+      onUpdate(msg)
+    })
 
   }
 
@@ -154,43 +195,6 @@ const DataLayer = function() {
      return a > b &&  1 ||
             a < b && -1 ||
             0
-  }
-
-  /**
-  * @onUpdate
-  *
-  * Invoked when new predictions arrive on live stream.
-  *
-  * If matching prediction found in list, update it's values
-  *
-  * If no match found, then prediction is new.  Add it to the list.
-  *
-  */
-
-  function onUpdate( msg ) {
-
-    console.log( 'UPDATE', moment().format() )
-    console.dir( msg.data )
-
-    let data = flatten( JSON.parse( msg.data ) )
-
-    let prediction = DATA.predictions.find( p => p.id == data.id )
-
-    if( !prediction ) {
-
-       console.log('Adding new prediction', data )
-       DATA.predictions.push( data )
-       DATA.predictions = DATA.predictions.sort( timeSortComparator )
-
-    } else {
-
-       console.log('Updating existing prediction BEFORE', prediction )
-       if( data.departure ) prediction.departure = data.departure
-       if( data.train ) prediction.train = data.train
-       if( data.status )  prediction.status = data.status
-       console.log('Updating existing prediction AFTER', prediction )
-
-    }
   }
 
   /**
