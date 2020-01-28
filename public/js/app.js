@@ -6,12 +6,6 @@ Vue.component( 'departure-table', {
       if(!s) return s
       let t = moment(s)
       return t < moment() ? 'DEPARTED' : t.format('HH:mm:ss')
-    },
-
-    track: function(s='') {
-       /* tracknum is last element of prediction id */
-       let tracknum = s.match( /-([0-9]+)$/ )[1] 
-       return parseInt( tracknum ) == tracknum  ? tracknum : 'TBD'
     }
 
   },
@@ -37,12 +31,11 @@ Vue.component( 'departure-table', {
             <td>{{prediction.status}}</td>
             <td>{{prediction.boardingStatus}}</td>
             <td>{{prediction.train}}</td>
-            <td>{{prediction.id | track }}</td>
+            <td>?</td>
             <td class="debug"><div class='preformatted'>{{prediction}}</div></td>
           </tr>
         </tbody>
       </table>
-      <div class="debug preformatted"> {{ predictions }} </div>
     </div>
   `
 })

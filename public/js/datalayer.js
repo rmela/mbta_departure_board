@@ -46,6 +46,7 @@ const DataLayer = function() {
       if( !trip )
          continue
       prediction.destination = trip.attributes.headsign
+      //prediction.track = trip.included.headsign
     }
     
     
@@ -84,6 +85,7 @@ const DataLayer = function() {
       trip: prediction.relationships.trip.data.id,
       route: prediction.relationships.route.data.id,
       station: prediction.relationships.stop.data.id,
+      direction: prediction.attributes.direction_id,
       status: prediction.attributes.status,
       train: train,
       boardingStatus: null,
