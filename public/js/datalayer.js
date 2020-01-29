@@ -174,7 +174,7 @@ const DataLayer = function() {
     if( !prediction ) {
 
        console.log('Adding new prediction', data )
-       await setDestinations( [prediction] )
+       await setDestinations( [data] )
        DATA.predictions.push( data )
        DATA.predictions = DATA.predictions.sort( timeSortComparator )
 
