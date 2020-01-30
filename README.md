@@ -24,15 +24,15 @@ Board should show
 ## Overall Approach ( Naive version )
 
    1. Initialize board with predictions for North and South stations.
-     1.1 Retrieve list of current predictions
-     1.2 Filter for predictions that have departure times
-     1.3 Flatten into a simpler structure for use in templates
+       1. Retrieve list of current predictions
+       2. Filter for predictions that have departure times
+       3. Flatten into a simpler structure for use in templates
      
    2. Open stream for live receiving prediction updates
-     2.1 For each trip in stream
-       2.1.1 If current list has a matching prediction, then update 
+       1. For each trip in stream
+       2. If current list has a matching prediction, then update 
              existing with new departure time / status.  Match is performed using trip ID
-       2.1.2 If current list does not have a matching prediction, push the new prediction onto the list
+       3. If current list does not have a matching prediction, push the new prediction onto the list
              ( it's a new upcoming departure )
    
    3. Prune predictions list by removing predictions whose departure times are null or are in the past
@@ -40,14 +40,16 @@ Board should show
 
 #### Compromises, Hacks, Ommitted Functionality 
 
-   * Boarding status not displayed.   Not sure whether updates contain statuses or whether
-     they should be estimated using departure times 
-   * Naively assumes that route name "CR-Newburyport" has the destination of Newburyport,
-     when in fact it could be either "Newburyport" or "Rockport"
-   * Extracts track number from end of prediction id.   Not sure if that's correct
+   * Couldn't figure out how to get "trip" included in realtime streamed predictions.
+     So makes a second API call for "trip" in order to populate "destination", using
+     trip.attributes.headsign
+   * Didn't implement boarding track number.  Would currently use same approach as for trips.
    * Some vehicle ids look like ```block_2151_schedBasedVehicle```.  In this case
      I extract the integer and use that as the train id.   Not sure that's correct. 
-   * Initial board has fewer entries compared to boards at mbta.com
+   * Initial board often has fewer entries compared to boards at mbta.com.
+     Could be remedied by fetching schedules to fill out departure times for predictions that
+     don't have them, thus adding more predictions to the list ( list only displays predictions
+     that have departure times )
      
 ## More complete version
 
@@ -67,14 +69,9 @@ the station departure times to backfill the initial predictions.
 
 ## Excuses
 
-It's hard to test the update stream on weekends because there are so few updates.  So there may be
-issues.
-
 This is my first use of Vue.  I'm not a front end developer, so I chose the simplest framework that 
 has data bindings, but still there was a learning curve, and it's mostly cut and paste from a 
 "Hello World"
 
-Still feeling clumsy with the MBTA API, and I know I'm not using it very well.
-
-HTML template not very DRY.  I opted to leave it that way rather than create component in app.js,
-since app.js already has plenty of code.
+Still feeling clumsy with the MBTA API, and I know I'm not using it very well wrt getting relationship
+object information into streamed prediction objects.
